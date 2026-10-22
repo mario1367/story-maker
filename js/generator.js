@@ -31,72 +31,64 @@
      書いた人の語り口を上書きしないためです。
      また、事実を含まない言葉だけにしてあります。
 
-     parts … 章のまとめ方。10の質問を4つの章に分け、一つの物語として流れるようにします。
-             「次の世代へ伝えたい言葉」は、小説の冒頭の引用（エピグラフ）として扱います。 */
+     PARTS … 章のまとめ方。質問を章に分け、一つの物語として流れるようにします。
+             最後の質問（悟ったこと・伝えたいこと）は、冒頭の引用（エピグラフ）と結びの章に使います。 */
   var PARTS = [
-    ["birthplace", "childhood", "school"],
-    ["dream", "work"],
-    ["turning", "people"],
-    ["hardship", "joy"]
+    ["failure", "feeling"],
+    ["overcome", "support"],
+    ["now"]
   ];
+  // 最後の章（「悟ったこと・伝えたいこと」）。冒頭の引用にも使います
+  var LESSON = "lesson";
 
   var TEMPLATES = {
     warm: {
-      partTitles: ["ふるさとと、幼い日々", "夢と、働く日々", "分かれ道と、大切な人", "涙と、よろこび"],
+      partTitles: ["つまずいた日", "立ち上がるまで", "いま、思うこと", "次の世代へ"],
       prologue: {
-        self: ["これは、私が歩んできた道のりを、私自身の言葉で綴った物語。"],
-        other: ["これは、{S}が歩んできた道のりを、思い出の言葉でたどる物語。"]
+        self: ["これは、私の人生でいちばん大きな失敗と、そこから学んだことを、私自身の言葉で綴った物語。"],
+        other: ["これは、{S}の人生でいちばん大きな失敗と、そこから学んだことを、思い出の言葉でたどる物語。"]
       },
       bridges: {
-        birthplace: "はじまりは、{S}が生まれ育った場所。",
-        childhood: "幼い日、夢中になっていたもの。",
-        school: "学生時代の、忘れられない一場面。",
-        dream: "若い日に、胸に抱いた夢。",
-        work: "働く日々のなかで、心に残っていること。",
-        turning: "そして訪れた、人生の分かれ道。",
-        people: "大切な人と過ごした、かけがえのない時間。",
-        hardship: "つらく、苦しかった日々のこと。",
-        joy: "そして、人生でいちばんうれしかった日。"
+        failure: "{S}の人生で、いちばん大きな失敗。",
+        feeling: "そのとき、胸にあった思い。",
+        overcome: "そこから、どうやって立ち上がったのか。",
+        support: "その道のりで、支えになったもの。",
+        now: "そして今、あの失敗を振り返って。",
+        lesson: "その経験が教えてくれたこと。"
       },
       epilogue: ["ここに綴ったのは、{S}の人生のほんの一部。けれど、その一つひとつが、かけがえのない物語。"]
     },
 
     memoir: {
-      partTitles: ["生い立ち", "志と仕事", "転機と縁", "苦難と喜び"],
+      partTitles: ["失敗", "再起", "回顧", "伝えたいこと"],
       prologue: {
-        self: ["私自身の歩みを、私の言葉のままに書き留めた記録。"],
-        other: ["{S}の歩みを、残された言葉のままに書き留めた記録。"]
+        self: ["私の人生で最も大きな失敗と、そこから得たものを、私の言葉のままに書き留めた記録。"],
+        other: ["{S}の人生で最も大きな失敗と、そこから得たものを、残された言葉のままに書き留めた記録。"]
       },
       bridges: {
-        birthplace: "生まれ育った土地について。",
-        childhood: "幼い頃に好んだもの。",
-        school: "学生時代の記憶。",
-        dream: "若き日の志。",
-        work: "仕事のこと。",
-        turning: "人生の転機。",
-        people: "人との縁。",
-        hardship: "最も苦労したこと。",
-        joy: "最も喜ばしかったこと。"
+        failure: "人生最大の失敗について。",
+        feeling: "当時の心境。",
+        overcome: "立ち直るまでのこと。",
+        support: "支えとなったもの。",
+        now: "いま振り返って。",
+        lesson: "この経験から得たもの。"
       },
       epilogue: ["以上、{S}の歩みの記録。"]
     },
 
     novel: {
-      partTitles: ["はじまりの場所", "胸に灯した夢", "分かれ道", "光の差す日"],
+      partTitles: ["つまずき", "夜明けまで", "振り返る道", "受け継がれる言葉"],
       prologue: {
-        self: ["記憶の糸をたぐり寄せると、浮かび上がってくるいくつもの場面。これは、そのひとつひとつを拾い集めた、私の物語。"],
-        other: ["記憶の糸をたぐり寄せると、浮かび上がってくるいくつもの場面。これは、そのひとつひとつを拾い集めた、{S}の物語。"]
+        self: ["記憶の糸をたぐると、ひときわ鮮やかに浮かび上がる、ひとつの失敗。これは、そこから始まる私の物語。"],
+        other: ["記憶の糸をたぐると、ひときわ鮮やかに浮かび上がる、ひとつの失敗。これは、そこから始まる{S}の物語。"]
       },
       bridges: {
-        birthplace: "すべての始まりは、あの場所。",
-        childhood: "幼い心をとらえて離さなかったもの――。",
-        school: "学生時代。いまも色あせない、ひとつの場面。",
-        dream: "若き日、胸に灯した夢。",
-        work: "働く日々のなかに刻まれた記憶。",
-        turning: "やがて訪れた、分かれ道。",
-        people: "思い出のなかには、いつも大切な人の姿。",
-        hardship: "けれど、平坦なばかりではない道。",
-        joy: "そして、光の差す日。"
+        failure: "忘れようとしても、忘れられない失敗。",
+        feeling: "そのとき、胸に渦巻いていたもの。",
+        overcome: "暗い道の先へ、どう歩き出したのか。",
+        support: "その道のりを照らしてくれたもの。",
+        now: "そして、時を経た今。",
+        lesson: "あの日が残してくれたもの。"
       },
       epilogue: ["物語は、ここでひとまず幕。ここに綴られなかった日々もまた、確かに{S}の人生の一部。"]
     },
@@ -104,20 +96,16 @@
     // 手紙風は章に分けず、一通の手紙として流れるようにします
     letter: {
       prologue: {
-        self: ["家族のみんなへ。", "私がこれまで歩いてきた道のりを、少しずつ書き残しておこうと思います。"],
-        other: ["{N}へ。", "あなたが歩んできた道のりを、思い出をたどりながら、手紙に綴ってみました。"]
+        self: ["家族のみんなへ。", "私の人生でいちばん大きな失敗のことを、書き残しておこうと思います。"],
+        other: ["{N}へ。", "あなたの人生でいちばん大きな失敗と、そこから学んだことを、手紙に綴ってみました。"]
       },
       bridges: {
-        birthplace: "{S}が生まれ育った場所のこと。",
-        childhood: "子どもの頃、{S}が好きだったこと。",
-        school: "学生時代の、忘れられない思い出。",
-        dream: "若い頃、{S}が胸に抱いていた夢。",
-        work: "仕事にまつわる思い出。",
-        turning: "{S}の人生を大きく変えた出来事。",
-        people: "大切な人との、忘れられない時間。",
-        hardship: "苦労を重ねた日々のこと。",
-        joy: "そして、{S}がいちばんうれしかったこと。",
-        message: { self: "最後に、みんなに伝えたいこと。", other: "{S}が次の世代に伝えたい言葉。" }
+        failure: "{S}の人生で、いちばん大きな失敗のこと。",
+        feeling: "そのときの気持ち。",
+        overcome: "どうやって乗り越えたのか。",
+        support: "そのとき、支えになったもの。",
+        now: "今、振り返って思うこと。",
+        lesson: { self: "そして、みんなに伝えたいこと。", other: "そして、{S}が次の世代に伝えたいこと。" }
       },
       epilogue: {
         self: ["長い手紙を、最後まで読んでくれてありがとう。"],
@@ -150,7 +138,7 @@
       });
   }
 
-  // 「次の世代に伝えたい言葉」を「」でくくる
+  // 「次の世代に伝えたいこと」を「」でくくる
   function toQuote(answer) {
     var text = String(answer).replace(/\r\n?/g, "\n").trim();
     if (/^[「『]/.test(text)) return toParagraphs(text);
@@ -212,7 +200,7 @@
     }).length;
     if (answeredCount === 0) return null;
 
-    var message = answerOf(data, "message");
+    var message = answerOf(data, LESSON);
     var bridgeFor = function (id) { return fill(pick(tpl.bridges[id], ctx.isSelf) || "", ctx); };
 
     if (data.tone === "letter") {
@@ -221,7 +209,7 @@
       window.QUESTIONS.forEach(function (q) {
         var answer = answerOf(data, q.id);
         if (!answer) return;
-        var body = q.id === "message" ? toQuote(answer) : toParagraphs(answer);
+        var body = q.id === LESSON ? toQuote(answer) : toParagraphs(answer);
         chapters.push({ heading: "", paragraphs: weave(bridgeFor(q.id), body) });
       });
       var closing = pick(tpl.epilogue, ctx.isSelf).map(function (t) { return fill(t, ctx); });
@@ -244,6 +232,11 @@
         });
         if (paragraphs.length) chapters.push({ heading: tpl.partTitles[pi], paragraphs: paragraphs });
       });
+
+      // 結びの章：悟ったこと・伝えたいこと
+      if (message) {
+        chapters.push({ heading: tpl.partTitles[PARTS.length], paragraphs: weave(bridgeFor(LESSON), toParagraphs(message)) });
+      }
 
       // 回答が少ないときは、締めの文を付けすぎない
       if (answeredCount >= 3) {

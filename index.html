@@ -56,7 +56,7 @@
 
       <ol class="steps">
         <li><span class="step-num">一</span><span class="step-title">誰の物語かを選ぶ</span><span class="step-desc">ご自身でも、ご家族でも。</span></li>
-        <li><span class="step-num">二</span><span class="step-title">十の質問に答える</span><span class="step-desc">答えにくい質問はとばせます。</span></li>
+        <li><span class="step-num">二</span><span class="step-title">六つの質問に答える</span><span class="step-desc">答えにくい質問はとばせます。</span></li>
         <li><span class="step-num">三</span><span class="step-title">物語ができあがる</span><span class="step-desc">自由に直して、保存・印刷できます。</span></li>
       </ol>
 
@@ -68,21 +68,21 @@
 
     <!-- ===== 完成サンプル ===== -->
     <section class="screen" id="screen-sample" data-screen="sample" hidden>
-      <h2 class="screen-title">完成サンプル</h2>
-      <p class="screen-lead">
+      <h2 class="screen-title no-print">完成サンプル</h2>
+      <p class="screen-lead no-print">
         架空の人物の回答から、実際にこのアプリでつくった見本です。
         あなたの物語も、こんなふうに一冊の本のような形にまとまります。
       </p>
-      <details class="answer-review sample-answers">
+      <details class="answer-review sample-answers no-print">
         <summary>この見本のもとになった回答を見る</summary>
         <p class="small">回答していない質問は、物語に含まれません。回答にない出来事が書き足されることもありません。</p>
         <ol class="review-list" id="sample-answer-list"></ol>
       </details>
       <article class="book" id="sample-book" aria-label="完成サンプルの物語"></article>
-      <div class="button-row center sample-actions">
+      <div class="button-row center sample-actions no-print">
         <button type="button" class="btn btn-primary btn-large" id="btn-sample-start">自分の物語をつくる</button>
       </div>
-      <div class="button-row center">
+      <div class="button-row center no-print">
         <button type="button" class="btn btn-ghost" data-go="intro">← トップに戻る</button>
       </div>
     </section>
@@ -136,13 +136,14 @@
     <!-- ===== 4. 質問 ===== -->
     <section class="screen" id="screen-question" data-screen="question" hidden>
       <div class="progress" aria-live="polite">
-        <div class="progress-text"><span id="q-count">質問 1</span><span class="progress-total"> ／ 10</span></div>
+        <div class="progress-text"><span id="q-count">質問 1</span><span class="progress-total" id="q-total"> ／ 6</span></div>
         <div class="progress-bar" aria-hidden="true"><span id="q-bar"></span></div>
         <nav class="q-dots" id="q-dots" aria-label="質問の一覧"></nav>
       </div>
 
       <p class="encourage" id="q-encourage" aria-live="polite" hidden></p>
       <h2 class="question-text" id="q-text"></h2>
+      <p class="question-note" id="q-note" hidden></p>
       <p class="question-hint" id="q-hint"></p>
       <label class="visually-hidden" for="q-answer">回答</label>
       <textarea class="answer-input" id="q-answer" rows="7" placeholder="思い出すままに、自由にお書きください。"></textarea>

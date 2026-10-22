@@ -8,7 +8,7 @@
   var QUESTIONS = window.QUESTIONS;
   var TONES = window.TONES;
   var Gen = window.StoryGenerator;
-  var STORAGE_KEY = CONFIG.STORAGE_KEY || "denshosha-story-maker-v1";
+  var STORAGE_KEY = CONFIG.STORAGE_KEY || "denshosha-story-maker-v2";
 
   /* ---------- 状態 ---------- */
   function emptyState() {
@@ -167,6 +167,9 @@
     $("q-bar").style.width = Math.round(((i + 1) / total) * 100) + "%";
     $("q-text").textContent = questionText(i);
     $("q-hint").textContent = QUESTIONS[i].hint;
+    $("q-note").textContent = QUESTIONS[i].note || "";
+    $("q-note").hidden = !QUESTIONS[i].note;
+    $("q-total").textContent = " ／ " + total;
     $("q-answer").value = state.answers[i];
     $("save-status").textContent = "";
     $("q-encourage").hidden = true;
@@ -184,14 +187,15 @@
     if (!answeredNow) {
       msg = "とばしても大丈夫です。あとから戻って書くこともできます。";
     } else if (n === 1) {
-      msg = "最初の一章が綴られました。" + owner + "が、少しずつ形になっています。";
+      msg = "最初の一ページが綴られました。" + owner + "が、少しずつ形になっています。";
     } else {
       var tails = [
         owner + "が、少しずつ形になっています。",
         "一つひとつの思い出が、ページになっていきます。",
         owner + "に、新しいページが加わりました。"
       ];
-      msg = Gen.chapterNumber(n) + "まで綴られました。" + tails[n % tails.length];
+      var kanji = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+      msg = (kanji[n] || n) + "ページ目が綴られました。" + tails[n % tails.length];
     }
     if (state.qIndex === QUESTIONS.length - 1) msg += "　いよいよ最後の質問です。";
     else if (state.qIndex === Math.floor(QUESTIONS.length / 2)) msg += "　ちょうど折り返しです。";
@@ -408,16 +412,24 @@
     story.chapters.forEach(function (c, ci) {
       var sec = el("section", "chapter" + (c.heading ? "" : " chapter-plain") + (c.role ? " chapter-" + c.role : ""));
       sec.setAttribute("data-index", ci);
+      var paras = c.paragraphs.slice();
+      var para = function (p) { return el("p", /^[「『]/.test(p) ? "quote" : "", p); };
       if (c.heading) {
         num++;
-        if (story.tone !== "letter") sec.appendChild(el("p", "chapter-num", Gen.chapterNumber(num)));
-        sec.appendChild(el("h2", "chapter-heading", c.heading));
+        // 見出しと書き出しの一段落をひとまとまりにし、印刷で見出しだけが取り残されないようにする
+        var lead = el("div", "chapter-lead");
+        if (story.tone !== "letter") lead.appendChild(el("p", "chapter-num", Gen.chapterNumber(num)));
+        lead.appendChild(el("h2", "chapter-heading", c.heading));
+        var leadBody = el("div", "chapter-body chapter-body-lead");
+        if (paras.length) leadBody.appendChild(para(paras.shift()));
+        lead.appendChild(leadBody);
+        sec.appendChild(lead);
       }
-      var body = el("div", "chapter-body");
-      c.paragraphs.forEach(function (p) {
-        body.appendChild(el("p", /^[「『]/.test(p) ? "quote" : "", p));
-      });
-      sec.appendChild(body);
+      if (paras.length || !c.heading) {
+        var body = el("div", "chapter-body");
+        paras.forEach(function (p) { body.appendChild(para(p)); });
+        sec.appendChild(body);
+      }
       book.appendChild(sec);
     });
 
@@ -462,8 +474,9 @@
       if (!c) continue;
       var h = secs[i].querySelector(".chapter-heading");
       if (h) c.heading = h.innerText.replace(/\s+/g, " ").trim() || c.heading;
-      var body = secs[i].querySelector(".chapter-body");
-      c.paragraphs = body.innerText.replace(/\r\n?/g, "\n").split(/\n+/)
+      var bodies = secs[i].querySelectorAll(".chapter-body");
+      var text = Array.prototype.map.call(bodies, function (b) { return b.innerText; }).join("\n");
+      c.paragraphs = text.replace(/\r\n?/g, "\n").split(/\n+/)
         .map(function (s) { return s.trim(); }).filter(Boolean);
     }
     state.edited = true;

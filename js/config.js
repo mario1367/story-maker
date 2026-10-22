@@ -16,5 +16,5 @@ window.APP_CONFIG = {
   AI_ENDPOINT: "",
 
   // ブラウザ内一時保存に使う名前（通常は変更不要）
-  STORAGE_KEY: "denshosha-story-maker-v1"
+  STORAGE_KEY: "denshosha-story-maker-v2"
 };

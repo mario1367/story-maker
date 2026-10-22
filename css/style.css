@@ -304,6 +304,12 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 .q-dot.is-current { outline: 2px solid var(--ink); outline-offset: 2px; color: var(--ink); font-weight: 700; }
 
 .question-text { font-size: 28px; line-height: 1.65; margin: 0 0 12px; }
+.question-note {
+  font-family: var(--font-mincho);
+  font-size: 18px; line-height: 1.9;
+  margin: 0 0 12px;
+  color: var(--ink);
+}
 .question-hint { color: var(--ink-soft); font-size: 16px; margin: 0 0 20px; }
 .save-status { min-height: 1.6em; font-size: 14px; color: var(--ink-faint); margin: 6px 0 0; }
 
@@ -519,8 +525,8 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 .chapter-prologue .chapter-body p { color: var(--ink-soft); }
 
 /* 章の書き出しは字下げせず、小説の扉のように */
-.chapter:not(.chapter-plain) .chapter-body p:first-child { text-indent: 0; }
-.chapter:not(.chapter-plain) .chapter-body p:first-child::first-letter {
+.chapter-body-lead p:first-child { text-indent: 0; }
+.chapter-body-lead p:first-child::first-letter {
   font-size: 1.6em;
   font-weight: 700;
   color: var(--shu-deep);
@@ -652,7 +658,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
   /* 章が長くなったので章の途中での改ページは許し、見出しと書き出しは離さない */
   .chapter { break-inside: auto; }
   .chapter-plain, .chapter-epigraph { break-inside: avoid; page-break-inside: avoid; }
-  .chapter-body p:first-child { break-before: avoid; page-break-before: avoid; }
+  .chapter-lead { break-inside: avoid; page-break-inside: avoid; }
   .chapter-num, .chapter-heading { break-after: avoid; page-break-after: avoid; }
   .chapter-epigraph {
     min-height: 200mm; margin: 0 auto;
