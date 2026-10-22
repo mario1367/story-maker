@@ -2,8 +2,8 @@
    物語の生成
    ------------------------------------------------------------
    ・テンプレート生成（標準）：APIキー不要。ブラウザの中だけで動きます。
-     書いた人の文章を、言い回しも文末もそのまま本文にします。
-     アプリが加えるのは「章の題」と、文末を持たない短い「つなぎ」だけ。
+     書いた人の文章を、言い回しも文末もそのまま本文にし、ひと続きの文章にまとめます。
+     アプリが加えるのは、文の頭の短い「つなぎの言葉」と、最初と最後のひとことだけ。
      語り口の色は、書いた人の文章だけが決めます。
      回答にない人名・地名・年代などの事実が加わることはありません。
    ・AI生成（任意）：config.js の AI_ENDPOINT を設定した場合のみ利用できます。
@@ -15,97 +15,51 @@
      subtitle: "副題",
      tone: "warm" | "memoir" | "novel" | "letter",
      source: "template" | "ai",
-     chapters: [ { heading: "見出し", paragraphs: ["段落", ...], role: "epigraph" など（任意） } ]
+     chapters: [ { heading: "見出し（なくてもよい）", paragraphs: ["段落", ...], role: "prologue" | "main" | "epilogue"（任意） } ]
    }
    ============================================================ */
 (function () {
   "use strict";
 
   /* ---------- 雰囲気ごとの文章テンプレート ----------
+     雰囲気によって変わるのは、物語の最初（prologue）と最後（epilogue）のひとことです。
      {S} … 主人公の呼び方（自分なら「私」、家族なら「祖母」など）
      {N} … 手紙の宛名
      値が { self, other } のものは、自分／他の人で文を使い分けます。
+     どれも「体言止め」にして、書いた人の語り口（です・ます／だ・である）を上書きしないようにしています。 */
 
-     つなぎの言葉は、すべて「体言止め」（〜のこと。〜の日。）にしてあります。
-     です・ます／だ・である のどちらで書かれた文章にもなじみ、
-     書いた人の語り口を上書きしないためです。
-     また、事実を含まない言葉だけにしてあります。
-
-     PARTS … 章のまとめ方。質問を章に分け、一つの物語として流れるようにします。
-             最後の質問（悟ったこと・伝えたいこと）は、冒頭の引用（エピグラフ）と結びの章に使います。 */
-  var PARTS = [
-    ["failure", "feeling"],
-    ["overcome", "support"],
-    ["now"]
-  ];
-  // 最後の章（「悟ったこと・伝えたいこと」）。冒頭の引用にも使います
+  // 最後の質問（悟ったこと・伝えたいこと）。物語の結びに、書いた人の言葉のまま置きます
   var LESSON = "lesson";
 
   var TEMPLATES = {
     warm: {
-      partTitles: ["つまずいた日", "立ち上がるまで", "いま、思うこと", "次の世代へ"],
       prologue: {
         self: ["これは、私の人生でいちばん大きな失敗と、そこから学んだことを、私自身の言葉で綴った物語。"],
         other: ["これは、{S}の人生でいちばん大きな失敗と、そこから学んだことを、思い出の言葉でたどる物語。"]
-      },
-      bridges: {
-        failure: "{S}の人生で、いちばん大きな失敗。",
-        feeling: "そのとき、胸にあった思い。",
-        overcome: "そこから、どうやって立ち上がったのか。",
-        support: "その道のりで、支えになったもの。",
-        now: "そして今、あの失敗を振り返って。",
-        lesson: "その経験が教えてくれたこと。"
       },
       epilogue: ["ここに綴ったのは、{S}の人生のほんの一部。けれど、その一つひとつが、かけがえのない物語。"]
     },
 
     memoir: {
-      partTitles: ["失敗", "再起", "回顧", "伝えたいこと"],
       prologue: {
         self: ["私の人生で最も大きな失敗と、そこから得たものを、私の言葉のままに書き留めた記録。"],
         other: ["{S}の人生で最も大きな失敗と、そこから得たものを、残された言葉のままに書き留めた記録。"]
-      },
-      bridges: {
-        failure: "人生最大の失敗について。",
-        feeling: "当時の心境。",
-        overcome: "立ち直るまでのこと。",
-        support: "支えとなったもの。",
-        now: "いま振り返って。",
-        lesson: "この経験から得たもの。"
       },
       epilogue: ["以上、{S}の歩みの記録。"]
     },
 
     novel: {
-      partTitles: ["つまずき", "夜明けまで", "振り返る道", "受け継がれる言葉"],
       prologue: {
         self: ["記憶の糸をたぐると、ひときわ鮮やかに浮かび上がる、ひとつの失敗。これは、そこから始まる私の物語。"],
         other: ["記憶の糸をたぐると、ひときわ鮮やかに浮かび上がる、ひとつの失敗。これは、そこから始まる{S}の物語。"]
       },
-      bridges: {
-        failure: "忘れようとしても、忘れられない失敗。",
-        feeling: "そのとき、胸に渦巻いていたもの。",
-        overcome: "暗い道の先へ、どう歩き出したのか。",
-        support: "その道のりを照らしてくれたもの。",
-        now: "そして、時を経た今。",
-        lesson: "あの日が残してくれたもの。"
-      },
       epilogue: ["物語は、ここでひとまず幕。ここに綴られなかった日々もまた、確かに{S}の人生の一部。"]
     },
 
-    // 手紙風は章に分けず、一通の手紙として流れるようにします
     letter: {
       prologue: {
         self: ["家族のみんなへ。", "私の人生でいちばん大きな失敗のことを、書き残しておこうと思います。"],
         other: ["{N}へ。", "あなたの人生でいちばん大きな失敗と、そこから学んだことを、手紙に綴ってみました。"]
-      },
-      bridges: {
-        failure: "{S}の人生で、いちばん大きな失敗のこと。",
-        feeling: "そのときの気持ち。",
-        overcome: "どうやって乗り越えたのか。",
-        support: "そのとき、支えになったもの。",
-        now: "今、振り返って思うこと。",
-        lesson: { self: "そして、みんなに伝えたいこと。", other: "そして、{S}が次の世代に伝えたいこと。" }
       },
       epilogue: {
         self: ["長い手紙を、最後まで読んでくれてありがとう。"],
@@ -142,8 +96,9 @@
   function toQuote(answer) {
     var text = String(answer).replace(/\r\n?/g, "\n").trim();
     if (/^[「『]/.test(text)) return toParagraphs(text);
-    text = text.replace(/[。．]$/, "");
-    return ["「" + text.replace(/\s*\n+\s*/g, "　") + "」"];
+    // 複数行は一つにつなげる（行末に句点がなければ補う）。最後の句点は「」の前では付けない
+    text = toParagraphs(text).join("").replace(/[。．]$/, "");
+    return ["「" + text + "」"];
   }
 
   /* 物語の主人公の呼び方などをまとめる */
@@ -172,18 +127,10 @@
     return map[data.tone] || "";
   }
 
-  /* ---------- テンプレート生成 ---------- */
-
-  // つなぎの言葉と、書いた人の最初の一文を同じ段落にして、文章が途切れず流れるようにする
-  function weave(bridge, answerParagraphs) {
-    var paras = answerParagraphs.slice();
-    if (!bridge) return paras;
-    if (paras.length && !/^[「『]/.test(paras[0])) {
-      paras[0] = bridge + paras[0];
-      return paras;
-    }
-    return [bridge].concat(paras);
-  }
+  /* ---------- テンプレート生成 ----------
+     章に分けず、ひと続きの文章にします。
+     書いた人の文の頭に、短いつなぎの言葉（「そのときは、」「それでも、」など）を付けて、
+     前の答えから自然につながるようにします。書いた人の言葉そのものは変えません。 */
 
   function answerOf(data, id) {
     var idx = -1;
@@ -191,57 +138,87 @@
     return idx >= 0 ? String(data.answers[idx] || "").trim() : "";
   }
 
+  // 回答の段落を一つにまとめる（文末に句点がなければ補う）
+  function joinAnswer(answer) {
+    return toParagraphs(answer).join("");
+  }
+
+  // 文が「名詞」や「〜です／〜だ」で終わっているか（「支えになったのは、〇〇。」の形にできるか）
+  function endsLikeNoun(text) {
+    var first = String(text).split(/[。！？!?]/)[0].replace(/[」』）)]+$/, "");
+    if (/(です|でした|だ|だった)$/.test(first)) return true;
+    return !/[たるうくすぬむぶつぐいんよねなかわぞさけ]$/.test(first);
+  }
+
+  // つなぎの言葉と回答を続ける。
+  // 回答がすでに、つなぎに当たる言葉（「その時」「でも」など）で始まっていれば、つなぎは付けない
+  function lead(prefix, text, skip) {
+    if (skip && skip.test(text)) return text;
+    if (text.indexOf(prefix.replace(/[、，]$/, "")) === 0) return text;
+    return prefix + text;
+  }
+  var STARTS_WITH_TIME = /^(その時|そのとき|その頃|そのころ|あの時|あのとき|当時)/;
+  var STARTS_WITH_LINK = /^(でも|しかし|けれど|けれども|それでも|それから|その後|そこで|だから|そして)/;
+
+  // 質問ごとのつなぎ方（{S}は主人公の呼び方）
+  var FLOW = {
+    failure: function (t, ctx) {
+      return endsLikeNoun(t)
+        ? lead(ctx.S + "の人生でいちばん大きな失敗は、", t)
+        : ctx.S + "の人生でいちばん大きな失敗。" + t;
+    },
+    feeling: function (t) { return lead("そのときは、", t, STARTS_WITH_TIME); },
+    overcome: function (t) { return lead("それでも、", t, STARTS_WITH_LINK); },
+    support: function (t) {
+      return endsLikeNoun(t)
+        ? lead("そんなとき支えになったのは、", t, STARTS_WITH_LINK)
+        : lead("そんなとき、", t, STARTS_WITH_LINK);
+    },
+    // 「今は〜」で始まる答えには「振り返ると、」だけを付けて、「今」が重ならないように
+    now: function (t) { return /^(今|いま)/.test(t) ? lead("振り返ると、", t) : lead("今振り返ると、", t); }
+  };
+
+  // どの答えを同じ段落にするか
+  var FLOW_PARAGRAPHS = [["failure", "feeling"], ["overcome", "support"], ["now"]];
+
   function generateFromTemplate(data) {
     var tpl = TEMPLATES[data.tone] || TEMPLATES.warm;
     var ctx = makeContext(data);
-    var chapters = [];
     var answeredCount = window.QUESTIONS.filter(function (q, i) {
       return String(data.answers[i] || "").trim();
     }).length;
     if (answeredCount === 0) return null;
 
-    var message = answerOf(data, LESSON);
-    var bridgeFor = function (id) { return fill(pick(tpl.bridges[id], ctx.isSelf) || "", ctx); };
-
-    if (data.tone === "letter") {
-      // 手紙：章に分けず、段落を重ねて一通の手紙に
-      chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
-      window.QUESTIONS.forEach(function (q) {
-        var answer = answerOf(data, q.id);
-        if (!answer) return;
-        var body = q.id === LESSON ? toQuote(answer) : toParagraphs(answer);
-        chapters.push({ heading: "", paragraphs: weave(bridgeFor(q.id), body) });
+    var paragraphs = [];
+    FLOW_PARAGRAPHS.forEach(function (ids) {
+      var text = "";
+      ids.forEach(function (id) {
+        var answer = answerOf(data, id);
+        if (!answer) return; // 答えていない質問は、物語に含めない
+        text += FLOW[id](joinAnswer(answer), ctx);
       });
+      if (text) paragraphs.push(text);
+    });
+
+    // 結び：悟ったこと・伝えたいことを、書いた人の言葉のまま「」で
+    var lesson = answerOf(data, LESSON);
+    if (lesson) {
+      var lessonLead = ctx.isSelf
+        ? (data.tone === "letter" ? "そして、みんなに伝えたいこと。" : "そして、この経験から次の世代へ伝えたいこと。")
+        : "そして、この経験から" + ctx.S + "が次の世代へ伝えたいこと。";
+      paragraphs.push(lessonLead);
+      paragraphs = paragraphs.concat(toQuote(lesson));
+    }
+
+    var chapters = [];
+    chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
+    chapters.push({ heading: "", paragraphs: paragraphs, role: "main" });
+
+    // 回答が少ないときは、締めの文を付けすぎない
+    if (answeredCount >= 3 || data.tone === "letter") {
       var closing = pick(tpl.epilogue, ctx.isSelf).map(function (t) { return fill(t, ctx); });
-      if (ctx.isSelf && ctx.name) closing.push(ctx.name + "より");
+      if (data.tone === "letter" && ctx.isSelf && ctx.name) closing.push(ctx.name + "より");
       chapters.push({ heading: "", paragraphs: closing, role: "epilogue" });
-    } else {
-      // 小説の冒頭に置く引用（エピグラフ）
-      if (message) {
-        var by = ctx.isSelf ? (ctx.name || "私") + "から、次の世代へ" : ctx.S + "の言葉";
-        chapters.push({ heading: "", paragraphs: toQuote(message).concat(["―― " + by]), role: "epigraph" });
-      }
-      chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
-
-      PARTS.forEach(function (ids, pi) {
-        var paragraphs = [];
-        ids.forEach(function (id) {
-          var answer = answerOf(data, id);
-          if (!answer) return; // 答えていない質問は、物語に含めない
-          paragraphs = paragraphs.concat(weave(bridgeFor(id), toParagraphs(answer)));
-        });
-        if (paragraphs.length) chapters.push({ heading: tpl.partTitles[pi], paragraphs: paragraphs });
-      });
-
-      // 結びの章：悟ったこと・伝えたいこと
-      if (message) {
-        chapters.push({ heading: tpl.partTitles[PARTS.length], paragraphs: weave(bridgeFor(LESSON), toParagraphs(message)) });
-      }
-
-      // 回答が少ないときは、締めの文を付けすぎない
-      if (answeredCount >= 3) {
-        chapters.push({ heading: "", paragraphs: tpl.epilogue.map(function (t) { return fill(t, ctx); }), role: "epilogue" });
-      }
     }
 
     return {
@@ -285,26 +262,19 @@
       if (!json || !Array.isArray(json.chapters) || json.chapters.length === 0) {
         throw new Error("物語を受け取れませんでした");
       }
-      var chapters = [];
-      var epigraph = String(json.epigraph || "").trim();
-      if (epigraph && data.tone !== "letter") {
-        var ctx = makeContext(data);
-        var by = ctx.isSelf ? (ctx.name || "私") + "から、次の世代へ" : ctx.S + "の言葉";
-        chapters.push({ heading: "", paragraphs: toQuote(epigraph).concat(["―― " + by]), role: "epigraph" });
-      }
       return {
         title: String(json.title || defaultTitle(data)),
         subtitle: String(json.subtitle || defaultSubtitle(data)),
         tone: data.tone,
         source: "ai",
-        chapters: chapters.concat(json.chapters.map(function (c) {
+        chapters: json.chapters.map(function (c) {
           return {
             heading: String(c.heading || ""),
             paragraphs: (Array.isArray(c.paragraphs) ? c.paragraphs : [String(c.paragraphs || "")])
               .map(function (p) { return String(p).trim(); })
               .filter(Boolean)
           };
-        }))
+        })
       };
     });
   }

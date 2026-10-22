@@ -521,6 +521,16 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
   text-align: right;
 }
 
+/* 本文の書き出しは、最初の一文字を大きく */
+.chapter-main .chapter-body p:first-child { text-indent: 0; }
+.chapter-main .chapter-body p:first-child::first-letter {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--shu-deep);
+  margin-right: 0.04em;
+}
+.chapter-main { margin-bottom: 40px; }
+
 /* 序文は少し控えめに */
 .chapter-prologue .chapter-body p { color: var(--ink-soft); }
 
