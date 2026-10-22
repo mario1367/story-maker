@@ -2,7 +2,9 @@
    物語の生成
    ------------------------------------------------------------
    ・テンプレート生成（標準）：APIキー不要。ブラウザの中だけで動きます。
-     回答の文章はそのまま使い、前後に「つなぎの一文」を添えるだけなので、
+     書いた人の文章を、言い回しも文末もそのまま本文にします。
+     アプリが加えるのは「章の題」と、文末を持たない短い「つなぎ」だけ。
+     語り口の色は、書いた人の文章だけが決めます。
      回答にない人名・地名・年代などの事実が加わることはありません。
    ・AI生成（任意）：config.js の AI_ENDPOINT を設定した場合のみ利用できます。
      失敗したときは自動的にテンプレート生成に切り替わります。
@@ -13,93 +15,109 @@
      subtitle: "副題",
      tone: "warm" | "memoir" | "novel" | "letter",
      source: "template" | "ai",
-     chapters: [ { heading: "見出し", paragraphs: ["段落", ...] } ]
+     chapters: [ { heading: "見出し", paragraphs: ["段落", ...], role: "epigraph" など（任意） } ]
    }
    ============================================================ */
 (function () {
   "use strict";
 
   /* ---------- 雰囲気ごとの文章テンプレート ----------
-     {S} … 主人公の呼び方（自分なら「私」、家族なら「父」など）
+     {S} … 主人公の呼び方（自分なら「私」、家族なら「祖母」など）
+     {N} … 手紙の宛名
      値が { self, other } のものは、自分／他の人で文を使い分けます。
-     ここにある文は「事実」を含まない、つなぎの言葉だけにしてあります。 */
+
+     つなぎの言葉は、すべて「体言止め」（〜のこと。〜の日。）にしてあります。
+     です・ます／だ・である のどちらで書かれた文章にもなじみ、
+     書いた人の語り口を上書きしないためです。
+     また、事実を含まない言葉だけにしてあります。
+
+     parts … 章のまとめ方。10の質問を4つの章に分け、一つの物語として流れるようにします。
+             「次の世代へ伝えたい言葉」は、小説の冒頭の引用（エピグラフ）として扱います。 */
+  var PARTS = [
+    ["birthplace", "childhood", "school"],
+    ["dream", "work"],
+    ["turning", "people"],
+    ["hardship", "joy"]
+  ];
+
   var TEMPLATES = {
     warm: {
+      partTitles: ["ふるさとと、幼い日々", "夢と、働く日々", "分かれ道と、大切な人", "涙と、よろこび"],
       prologue: {
-        self: ["これは、私がこれまで歩いてきた道のりを、ひとつずつ思い出しながら綴った物語です。"],
-        other: ["これは、{S}が歩んできた道のりを、ひとつずつたどりながら綴った物語です。"]
+        self: ["これは、私が歩んできた道のりを、私自身の言葉で綴った物語。"],
+        other: ["これは、{S}が歩んできた道のりを、思い出の言葉でたどる物語。"]
       },
-      chapters: {
-        birthplace: { heading: "ふるさと", lead: "物語は、{S}が生まれ育った場所から始まります。" },
-        childhood: { heading: "幼い日々", lead: "子どもの頃の{S}が好きだったもの。それは、こんなことでした。" },
-        school: { heading: "学び舎の思い出", lead: { self: "学生時代を振り返ると、今も忘れられない思い出があります。", other: "{S}の学生時代には、忘れられない思い出があります。" } },
-        dream: { heading: "若き日の夢", lead: "若い頃、{S}の胸には夢がありました。" },
-        work: { heading: "働くということ", lead: "仕事について思い返すとき、心に浮かぶことがあります。" },
-        turning: { heading: "人生の転機", lead: "人生には、その後の道を大きく変える出来事があります。{S}にとって、それはこんな出来事でした。" },
-        people: { heading: "大切な人と", lead: "かけがえのない人との思い出も、{S}の人生を形づくってきました。" },
-        hardship: { heading: "苦しかった日々", lead: "人生には、つらく苦しい時期もありました。" },
-        joy: { heading: "よろこびの日", lead: "そして、{S}の人生で一番うれしかったこと。" },
-        message: { heading: "次の世代へ", lead: "最後に、{S}から次の世代へ伝えたい言葉があります。" }
+      bridges: {
+        birthplace: "はじまりは、{S}が生まれ育った場所。",
+        childhood: "幼い日、夢中になっていたもの。",
+        school: "学生時代の、忘れられない一場面。",
+        dream: "若い日に、胸に抱いた夢。",
+        work: "働く日々のなかで、心に残っていること。",
+        turning: "そして訪れた、人生の分かれ道。",
+        people: "大切な人と過ごした、かけがえのない時間。",
+        hardship: "つらく、苦しかった日々のこと。",
+        joy: "そして、人生でいちばんうれしかった日。"
       },
-      epilogue: ["ここに綴ったのは、{S}の人生のほんの一部にすぎません。けれど、その一つひとつが、かけがえのない物語です。"]
+      epilogue: ["ここに綴ったのは、{S}の人生のほんの一部。けれど、その一つひとつが、かけがえのない物語。"]
     },
 
     memoir: {
+      partTitles: ["生い立ち", "志と仕事", "転機と縁", "苦難と喜び"],
       prologue: {
-        self: ["本稿は、私自身の歩みを、記憶と言葉をもとに書き留めたものである。"],
-        other: ["本稿は、{S}の歩みを、残された記憶と言葉をもとに書き留めたものである。"]
+        self: ["私自身の歩みを、私の言葉のままに書き留めた記録。"],
+        other: ["{S}の歩みを、残された言葉のままに書き留めた記録。"]
       },
-      chapters: {
-        birthplace: { heading: "生い立ち", lead: "まず、生まれ育った土地について記す。" },
-        childhood: { heading: "幼少期", lead: "幼い頃の{S}が好んだものは、次のとおりである。" },
-        school: { heading: "学生時代", lead: "学生時代の記憶として、とりわけ印象深いものがある。" },
-        dream: { heading: "青年期の志", lead: "若い頃に抱いていた夢についても、記しておきたい。" },
-        work: { heading: "仕事", lead: "仕事にまつわる記憶のなかで、印象に残っているのは次のことである。" },
-        turning: { heading: "転機", lead: "人生の大きな転機となった出来事がある。" },
-        people: { heading: "人との縁", lead: "大切な人との思い出として、次のことが記憶に残っている。" },
-        hardship: { heading: "苦難", lead: "最も苦労した経験についても、記しておく。" },
-        joy: { heading: "喜び", lead: "人生で最もうれしかった出来事は、次のとおりである。" },
-        message: { heading: "伝えたいこと", lead: "最後に、次の世代へ残したい言葉を記す。" }
+      bridges: {
+        birthplace: "生まれ育った土地について。",
+        childhood: "幼い頃に好んだもの。",
+        school: "学生時代の記憶。",
+        dream: "若き日の志。",
+        work: "仕事のこと。",
+        turning: "人生の転機。",
+        people: "人との縁。",
+        hardship: "最も苦労したこと。",
+        joy: "最も喜ばしかったこと。"
       },
-      epilogue: ["以上が、{S}の歩みの記録である。"]
+      epilogue: ["以上、{S}の歩みの記録。"]
     },
 
     novel: {
+      partTitles: ["はじまりの場所", "胸に灯した夢", "分かれ道", "光の差す日"],
       prologue: {
-        self: ["記憶の糸をたぐり寄せると、いくつもの場面が静かに浮かび上がってくる。これは、そのひとつひとつを拾い集めた、私の物語だ。"],
-        other: ["記憶の糸をたぐり寄せると、いくつもの場面が静かに浮かび上がってくる。これは、そのひとつひとつを拾い集めた、{S}の物語だ。"]
+        self: ["記憶の糸をたぐり寄せると、浮かび上がってくるいくつもの場面。これは、そのひとつひとつを拾い集めた、私の物語。"],
+        other: ["記憶の糸をたぐり寄せると、浮かび上がってくるいくつもの場面。これは、そのひとつひとつを拾い集めた、{S}の物語。"]
       },
-      chapters: {
-        birthplace: { heading: "はじまりの場所", lead: "すべての始まりは、生まれ育ったあの場所にある。" },
-        childhood: { heading: "幼き日のときめき", lead: "幼い{S}の心をとらえていたもの――。" },
-        school: { heading: "色あせない季節", lead: "学生時代。いまも色あせない場面がある。" },
-        dream: { heading: "胸に灯した夢", lead: "若き日の{S}は、胸に夢を抱いていた。" },
-        work: { heading: "働く日々", lead: "働く日々のなかにも、忘れがたい記憶が刻まれている。" },
-        turning: { heading: "分かれ道", lead: "人生には、ある日を境に景色が変わる瞬間がある。" },
-        people: { heading: "かけがえのない人", lead: "思い出のなかには、いつも大切な人の姿がある。" },
-        hardship: { heading: "長い坂道", lead: "けれど、道は平坦なばかりではなかった。" },
-        joy: { heading: "光の差す日", lead: "そして、胸がいっぱいになるほどうれしかった日のこと。" },
-        message: { heading: "受け継がれる言葉", lead: { self: "物語の終わりに、次の世代へ、この言葉を残したい。", other: "物語の終わりに、{S}の言葉をここに記しておこう。" } }
+      bridges: {
+        birthplace: "すべての始まりは、あの場所。",
+        childhood: "幼い心をとらえて離さなかったもの――。",
+        school: "学生時代。いまも色あせない、ひとつの場面。",
+        dream: "若き日、胸に灯した夢。",
+        work: "働く日々のなかに刻まれた記憶。",
+        turning: "やがて訪れた、分かれ道。",
+        people: "思い出のなかには、いつも大切な人の姿。",
+        hardship: "けれど、平坦なばかりではない道。",
+        joy: "そして、光の差す日。"
       },
-      epilogue: ["物語はここで、ひとまず筆をおく。ここに綴られなかった日々もまた、確かに{S}の人生の一部である。"]
+      epilogue: ["物語は、ここでひとまず幕。ここに綴られなかった日々もまた、確かに{S}の人生の一部。"]
     },
 
+    // 手紙風は章に分けず、一通の手紙として流れるようにします
     letter: {
       prologue: {
         self: ["家族のみんなへ。", "私がこれまで歩いてきた道のりを、少しずつ書き残しておこうと思います。"],
         other: ["{N}へ。", "あなたが歩んできた道のりを、思い出をたどりながら、手紙に綴ってみました。"]
       },
-      chapters: {
-        birthplace: { lead: { self: "まずは、私が生まれ育った場所のことから話させてください。", other: "あなたが生まれ育った場所のこと。" } },
-        childhood: { lead: { self: "子どもの頃、私が好きだったのは、こんなことです。", other: "子どもの頃のあなたが好きだったこと。" } },
-        school: { lead: { self: "学生時代の、忘れられない思い出もあります。", other: "学生時代の、忘れられない思い出。" } },
-        dream: { lead: { self: "若い頃、私にはこんな夢がありました。", other: "若い頃、あなたが胸に抱いていた夢。" } },
-        work: { lead: { self: "仕事のことも、少し書いておきますね。", other: "仕事にまつわる、あなたの思い出。" } },
-        turning: { lead: { self: "人生の大きな転機になった出来事についても、伝えておきたいと思います。", other: "あなたの人生を大きく変えた出来事。" } },
-        people: { lead: { self: "大切な人との思い出も、ここに残しておきます。", other: "大切な人との、忘れられない思い出。" } },
-        hardship: { lead: { self: "苦労したこともありました。", other: "苦労を重ねた日々のこと。" } },
-        joy: { lead: { self: "そして、一番うれしかったこと。", other: "そして、あなたが一番うれしかったこと。" } },
-        message: { lead: { self: "最後に、みんなに伝えたいことがあります。", other: "あなたが次の世代に伝えたい言葉を、ここに書き留めておきます。" } }
+      bridges: {
+        birthplace: "{S}が生まれ育った場所のこと。",
+        childhood: "子どもの頃、{S}が好きだったこと。",
+        school: "学生時代の、忘れられない思い出。",
+        dream: "若い頃、{S}が胸に抱いていた夢。",
+        work: "仕事にまつわる思い出。",
+        turning: "{S}の人生を大きく変えた出来事。",
+        people: "大切な人との、忘れられない時間。",
+        hardship: "苦労を重ねた日々のこと。",
+        joy: "そして、{S}がいちばんうれしかったこと。",
+        message: { self: "最後に、みんなに伝えたいこと。", other: "{S}が次の世代に伝えたい言葉。" }
       },
       epilogue: {
         self: ["長い手紙を、最後まで読んでくれてありがとう。"],
@@ -167,35 +185,70 @@
   }
 
   /* ---------- テンプレート生成 ---------- */
+
+  // つなぎの言葉と、書いた人の最初の一文を同じ段落にして、文章が途切れず流れるようにする
+  function weave(bridge, answerParagraphs) {
+    var paras = answerParagraphs.slice();
+    if (!bridge) return paras;
+    if (paras.length && !/^[「『]/.test(paras[0])) {
+      paras[0] = bridge + paras[0];
+      return paras;
+    }
+    return [bridge].concat(paras);
+  }
+
+  function answerOf(data, id) {
+    var idx = -1;
+    window.QUESTIONS.forEach(function (q, i) { if (q.id === id) idx = i; });
+    return idx >= 0 ? String(data.answers[idx] || "").trim() : "";
+  }
+
   function generateFromTemplate(data) {
     var tpl = TEMPLATES[data.tone] || TEMPLATES.warm;
     var ctx = makeContext(data);
-    var questions = window.QUESTIONS;
     var chapters = [];
-    var answeredCount = 0;
-
-    questions.forEach(function (q, i) {
-      var answer = (data.answers[i] || "").trim();
-      if (!answer) return; // 答えていない質問は、物語に含めない
-      answeredCount++;
-      var c = tpl.chapters[q.id];
-      var paragraphs = [];
-      var lead = pick(c.lead, ctx.isSelf);
-      if (lead) paragraphs.push(fill(lead, ctx));
-      paragraphs = paragraphs.concat(q.id === "message" ? toQuote(answer) : toParagraphs(answer));
-      chapters.push({ heading: c.heading || "", paragraphs: paragraphs });
-    });
-
+    var answeredCount = window.QUESTIONS.filter(function (q, i) {
+      return String(data.answers[i] || "").trim();
+    }).length;
     if (answeredCount === 0) return null;
 
-    var prologue = pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); });
-    chapters.unshift({ heading: "", paragraphs: prologue, role: "prologue" });
+    var message = answerOf(data, "message");
+    var bridgeFor = function (id) { return fill(pick(tpl.bridges[id], ctx.isSelf) || "", ctx); };
 
-    // 回答が少ないときは、締めの文を付けすぎない
-    if (answeredCount >= 3 || data.tone === "letter") {
-      var epilogue = pick(tpl.epilogue, ctx.isSelf).map(function (t) { return fill(t, ctx); });
-      if (data.tone === "letter" && ctx.isSelf && ctx.name) epilogue.push(ctx.name + "より");
-      chapters.push({ heading: "", paragraphs: epilogue, role: "epilogue" });
+    if (data.tone === "letter") {
+      // 手紙：章に分けず、段落を重ねて一通の手紙に
+      chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
+      window.QUESTIONS.forEach(function (q) {
+        var answer = answerOf(data, q.id);
+        if (!answer) return;
+        var body = q.id === "message" ? toQuote(answer) : toParagraphs(answer);
+        chapters.push({ heading: "", paragraphs: weave(bridgeFor(q.id), body) });
+      });
+      var closing = pick(tpl.epilogue, ctx.isSelf).map(function (t) { return fill(t, ctx); });
+      if (ctx.isSelf && ctx.name) closing.push(ctx.name + "より");
+      chapters.push({ heading: "", paragraphs: closing, role: "epilogue" });
+    } else {
+      // 小説の冒頭に置く引用（エピグラフ）
+      if (message) {
+        var by = ctx.isSelf ? (ctx.name || "私") + "から、次の世代へ" : ctx.S + "の言葉";
+        chapters.push({ heading: "", paragraphs: toQuote(message).concat(["―― " + by]), role: "epigraph" });
+      }
+      chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
+
+      PARTS.forEach(function (ids, pi) {
+        var paragraphs = [];
+        ids.forEach(function (id) {
+          var answer = answerOf(data, id);
+          if (!answer) return; // 答えていない質問は、物語に含めない
+          paragraphs = paragraphs.concat(weave(bridgeFor(id), toParagraphs(answer)));
+        });
+        if (paragraphs.length) chapters.push({ heading: tpl.partTitles[pi], paragraphs: paragraphs });
+      });
+
+      // 回答が少ないときは、締めの文を付けすぎない
+      if (answeredCount >= 3) {
+        chapters.push({ heading: "", paragraphs: tpl.epilogue.map(function (t) { return fill(t, ctx); }), role: "epilogue" });
+      }
     }
 
     return {
@@ -239,19 +292,26 @@
       if (!json || !Array.isArray(json.chapters) || json.chapters.length === 0) {
         throw new Error("物語を受け取れませんでした");
       }
+      var chapters = [];
+      var epigraph = String(json.epigraph || "").trim();
+      if (epigraph && data.tone !== "letter") {
+        var ctx = makeContext(data);
+        var by = ctx.isSelf ? (ctx.name || "私") + "から、次の世代へ" : ctx.S + "の言葉";
+        chapters.push({ heading: "", paragraphs: toQuote(epigraph).concat(["―― " + by]), role: "epigraph" });
+      }
       return {
         title: String(json.title || defaultTitle(data)),
         subtitle: String(json.subtitle || defaultSubtitle(data)),
         tone: data.tone,
         source: "ai",
-        chapters: json.chapters.map(function (c) {
+        chapters: chapters.concat(json.chapters.map(function (c) {
           return {
             heading: String(c.heading || ""),
             paragraphs: (Array.isArray(c.paragraphs) ? c.paragraphs : [String(c.paragraphs || "")])
               .map(function (p) { return String(p).trim(); })
               .filter(Boolean)
           };
-        })
+        }))
       };
     });
   }
@@ -280,7 +340,8 @@
         lines.push("");
       }
       c.paragraphs.forEach(function (p) {
-        lines.push(/^[「『]/.test(p) ? p : "　" + p);
+        if (c.role === "epigraph") lines.push("　　　　" + p);
+        else lines.push(/^[「『]/.test(p) ? p : "　" + p);
       });
     });
     lines.push("");

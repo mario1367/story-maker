@@ -491,6 +491,42 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 }
 .chapter-plain .chapter-body p { color: var(--ink); }
 
+/* 冒頭の引用（エピグラフ） */
+.chapter-epigraph {
+  margin: 8px auto 64px;
+  max-width: 30em;
+  text-align: center;
+}
+.chapter-epigraph .chapter-body p,
+.chapter-epigraph .chapter-body p.quote {
+  text-indent: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 1.12em;
+  line-height: 2.2;
+  letter-spacing: 0.1em;
+}
+.chapter-epigraph .chapter-body p + p {
+  margin-top: 14px;
+  font-size: 0.9em;
+  color: var(--ink-soft);
+  text-align: right;
+}
+
+/* 序文は少し控えめに */
+.chapter-prologue .chapter-body p { color: var(--ink-soft); }
+
+/* 章の書き出しは字下げせず、小説の扉のように */
+.chapter:not(.chapter-plain) .chapter-body p:first-child { text-indent: 0; }
+.chapter:not(.chapter-plain) .chapter-body p:first-child::first-letter {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--shu-deep);
+  margin-right: 0.04em;
+}
+
 /* 手紙風：見出しなし、便箋の罫線 */
 .tone-letter .chapter { margin-bottom: 20px; }
 .tone-letter .chapter-body p {
@@ -613,9 +649,16 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
     page-break-after: always; break-after: page;
   }
   .book-title { font-size: 26pt; }
-  /* 章の見出しだけがページの最後に取り残されないよう、短い章は分割しない */
-  .chapter { break-inside: avoid; page-break-inside: avoid; }
+  /* 章が長くなったので章の途中での改ページは許し、見出しと書き出しは離さない */
+  .chapter { break-inside: auto; }
+  .chapter-plain, .chapter-epigraph { break-inside: avoid; page-break-inside: avoid; }
+  .chapter-body p:first-child { break-before: avoid; page-break-before: avoid; }
   .chapter-num, .chapter-heading { break-after: avoid; page-break-after: avoid; }
+  .chapter-epigraph {
+    min-height: 200mm; margin: 0 auto;
+    display: flex; flex-direction: column; justify-content: center;
+    break-after: page; page-break-after: always;
+  }
   .chapter-body p { orphans: 3; widows: 3; }
   .book.is-editing [contenteditable] { outline: none; }
   .book-seal, .chapter-body p.quote { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

@@ -406,7 +406,7 @@
 
     var num = 0;
     story.chapters.forEach(function (c, ci) {
-      var sec = el("section", "chapter" + (c.heading ? "" : " chapter-plain"));
+      var sec = el("section", "chapter" + (c.heading ? "" : " chapter-plain") + (c.role ? " chapter-" + c.role : ""));
       sec.setAttribute("data-index", ci);
       if (c.heading) {
         num++;
