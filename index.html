@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>人生の物語メーカー｜デンショウ舎</title>
+  <meta name="description" content="いくつかの質問に答えるだけで、あなたや大切な家族の人生を、ひとつの物語に。ログイン不要・無料でお使いいただけます。">
+  <meta name="theme-color" content="#f5efe2">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+
+  <header class="site-header no-print">
+    <div class="header-inner">
+      <a class="brand" id="brand-link" href="#">
+        <span class="brand-mark" aria-hidden="true">伝</span>
+        <span class="brand-text">
+          <span class="brand-name">デンショウ舎</span>
+          <span class="brand-sub">人生の物語メーカー</span>
+        </span>
+      </a>
+      <button type="button" class="link-button" id="btn-delete-top">入力データを削除</button>
+    </div>
+  </header>
+
+  <main id="main" class="no-print-wrap">
+
+    <!-- ===== 1. はじめの画面 ===== -->
+    <section class="screen" id="screen-intro" data-screen="intro">
+      <div class="hero">
+        <p class="eyebrow">無料・ログイン不要</p>
+        <h1 class="hero-title">あなたの人生を、<br>ひとつの物語に。</h1>
+        <p class="hero-lead">
+          いくつかの質問に答えるだけで、<br class="sp-only">あなたや大切なご家族の歩みを、<br>
+          一冊の本のような物語にまとめます。
+        </p>
+        <div class="resume-card" id="resume-card" hidden>
+          <p class="resume-text">前回の続きが、このブラウザに保存されています。</p>
+          <div class="button-row">
+            <button type="button" class="btn btn-primary" id="btn-resume">続きから始める</button>
+            <button type="button" class="btn btn-ghost" id="btn-restart">最初から始める</button>
+          </div>
+        </div>
+        <div class="button-row center" id="start-row">
+          <button type="button" class="btn btn-primary btn-large" id="btn-start">物語をつくる</button>
+        </div>
+      </div>
+
+      <ol class="steps">
+        <li><span class="step-num">一</span><span class="step-title">誰の物語かを選ぶ</span><span class="step-desc">ご自身でも、ご家族でも。</span></li>
+        <li><span class="step-num">二</span><span class="step-title">十の質問に答える</span><span class="step-desc">答えにくい質問はとばせます。</span></li>
+        <li><span class="step-num">三</span><span class="step-title">物語ができあがる</span><span class="step-desc">自由に直して、保存・印刷できます。</span></li>
+      </ol>
+
+      <p class="privacy-note">
+        入力した内容は、お使いのブラウザの中にだけ一時保存されます。<br>
+        外部のサーバーへ送信されることはありません。
+      </p>
+    </section>
+
+    <!-- ===== 2. 誰の物語にするか ===== -->
+    <section class="screen" id="screen-target" data-screen="target" hidden>
+      <h2 class="screen-title">誰の人生を物語にしますか？</h2>
+      <div class="choice-list" role="radiogroup" aria-label="物語の主人公">
+        <button type="button" class="choice" data-target="self" role="radio" aria-checked="false">
+          <span class="choice-label">自分の人生</span>
+          <span class="choice-desc">ご自身の歩みを振り返ります。</span>
+        </button>
+        <button type="button" class="choice" data-target="family" role="radio" aria-checked="false">
+          <span class="choice-label">家族の人生</span>
+          <span class="choice-desc">父・母・祖父母など、ご家族の歩みを綴ります。</span>
+        </button>
+        <button type="button" class="choice" data-target="other" role="radio" aria-checked="false">
+          <span class="choice-label">その他の大切な人の人生</span>
+          <span class="choice-desc">恩師や友人など、大切な方の歩みを綴ります。</span>
+        </button>
+      </div>
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost" data-go="intro">← 戻る</button>
+      </div>
+    </section>
+
+    <!-- ===== 3. 呼び名 ===== -->
+    <section class="screen" id="screen-name" data-screen="name" hidden>
+      <h2 class="screen-title" id="name-title">お名前を教えてください</h2>
+      <p class="screen-lead" id="name-lead"></p>
+      <label class="field-label" for="input-name" id="name-label">お名前（任意）</label>
+      <input type="text" class="text-input" id="input-name" maxlength="30" autocomplete="off">
+      <div class="chips" id="name-chips" hidden>
+        <button type="button" class="chip">父</button>
+        <button type="button" class="chip">母</button>
+        <button type="button" class="chip">祖父</button>
+        <button type="button" class="chip">祖母</button>
+        <button type="button" class="chip">夫</button>
+        <button type="button" class="chip">妻</button>
+      </div>
+      <p class="notice" id="name-notice" hidden>
+        ご家族や他の方について書く物語には、その方のプライバシーが含まれます。
+        インターネットで公開したり、他の人と共有したりするときは、ご本人やご家族の気持ちに配慮し、できるだけ同意を得てからにしてください。
+      </p>
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost" data-go="target">← 戻る</button>
+        <button type="button" class="btn btn-primary" id="btn-name-next">質問へ進む →</button>
+      </div>
+    </section>
+
+    <!-- ===== 4. 質問 ===== -->
+    <section class="screen" id="screen-question" data-screen="question" hidden>
+      <div class="progress" aria-live="polite">
+        <div class="progress-text"><span id="q-count">質問 1</span><span class="progress-total"> ／ 10</span></div>
+        <div class="progress-bar" aria-hidden="true"><span id="q-bar"></span></div>
+        <nav class="q-dots" id="q-dots" aria-label="質問の一覧"></nav>
+      </div>
+
+      <h2 class="question-text" id="q-text"></h2>
+      <p class="question-hint" id="q-hint"></p>
+      <label class="visually-hidden" for="q-answer">回答</label>
+      <textarea class="answer-input" id="q-answer" rows="7" placeholder="思い出すままに、自由にお書きください。"></textarea>
+      <p class="save-status" id="save-status" aria-live="polite"></p>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost" id="btn-q-prev">← 前へ</button>
+        <button type="button" class="btn btn-ghost" id="btn-q-skip">この質問をとばす</button>
+        <button type="button" class="btn btn-primary" id="btn-q-next">次へ →</button>
+      </div>
+    </section>
+
+    <!-- ===== 5. 雰囲気を選ぶ ===== -->
+    <section class="screen" id="screen-tone" data-screen="tone" hidden>
+      <h2 class="screen-title">物語の雰囲気を選んでください</h2>
+      <div class="choice-list" id="tone-list" role="radiogroup" aria-label="物語の雰囲気"></div>
+
+      <div class="ai-option" id="ai-option" hidden>
+        <label class="checkbox">
+          <input type="checkbox" id="input-ai">
+          <span>AIで文章を整える（試験機能）</span>
+        </label>
+        <p class="small">
+          チェックすると、回答の内容が文章作成のためにデンショウ舎のサーバーを経由してAIサービスへ送信されます。
+          送信された内容は物語の作成にのみ使われます。チェックしなければ、すべてブラウザの中だけで作成します。
+        </p>
+      </div>
+
+      <details class="answer-review">
+        <summary>回答を見直す</summary>
+        <ol class="review-list" id="review-list"></ol>
+      </details>
+
+      <p class="notice" id="tone-notice" hidden></p>
+      <p class="error" id="tone-error" role="alert" hidden></p>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-ghost" id="btn-tone-back">← 質問に戻る</button>
+        <button type="button" class="btn btn-primary btn-large" id="btn-generate">物語をつくる</button>
+      </div>
+    </section>
+
+    <!-- ===== 6. できあがり ===== -->
+    <section class="screen" id="screen-result" data-screen="result" hidden>
+      <div class="result-head no-print">
+        <h2 class="screen-title">あなたの物語ができました</h2>
+        <p class="screen-lead">
+          この文章は、いただいた回答をもとに組み立てた<strong>下書き</strong>です。
+          事実と違うところや、言い回しを変えたいところは、自由に直してください。
+        </p>
+        <p class="notice" id="result-notice" hidden>
+          ご家族や他の方の人生が書かれています。公開や共有をするときは、ご本人やご家族の同意を得るなど、プライバシーへの配慮をお願いします。
+        </p>
+        <p class="notice" id="ai-notice" hidden>
+          この文章はAIが整えたものです。回答にない内容が含まれていないか、念のためご確認ください。
+        </p>
+      </div>
+
+      <div class="toolbar no-print" id="toolbar">
+        <button type="button" class="tool" id="btn-title"><span class="tool-icon" aria-hidden="true">題</span>タイトルを変更</button>
+        <button type="button" class="tool" id="btn-edit"><span class="tool-icon" aria-hidden="true">筆</span><span id="btn-edit-label">文章を編集</span></button>
+        <button type="button" class="tool" id="btn-pdf"><span class="tool-icon" aria-hidden="true">冊</span>PDFで保存</button>
+        <button type="button" class="tool" id="btn-txt"><span class="tool-icon" aria-hidden="true">文</span>テキストで保存</button>
+        <button type="button" class="tool" id="btn-print"><span class="tool-icon" aria-hidden="true">刷</span>印刷</button>
+        <button type="button" class="tool" id="btn-tone-change"><span class="tool-icon" aria-hidden="true">趣</span>雰囲気を変える</button>
+      </div>
+
+      <form class="title-form no-print" id="title-form" hidden>
+        <label class="field-label" for="input-title">タイトル</label>
+        <input type="text" class="text-input" id="input-title" maxlength="60">
+        <label class="field-label" for="input-subtitle">副題（空欄でもかまいません）</label>
+        <input type="text" class="text-input" id="input-subtitle" maxlength="60">
+        <div class="button-row">
+          <button type="submit" class="btn btn-primary">変更する</button>
+          <button type="button" class="btn btn-ghost" id="btn-title-cancel">やめる</button>
+        </div>
+      </form>
+
+      <p class="edit-banner no-print" id="edit-banner" hidden>
+        編集中です。本文をタップ（クリック）すると、直接書き直せます。終わったら「編集を終える」を押してください。
+      </p>
+
+      <article class="book" id="book" aria-label="できあがった物語"></article>
+
+      <div class="button-row center no-print restart-row">
+        <button type="button" class="btn btn-ghost" id="btn-restart-all">最初から作り直す</button>
+      </div>
+
+      <aside class="invitation no-print" aria-label="デンショウ舎からのご案内">
+        <p class="invitation-title">この物語を、本当の一冊にしませんか？</p>
+        <p class="invitation-text">デンショウ舎では、人生の記録を丁寧に編集し、電子書籍や紙の本として残すお手伝いをしています。</p>
+        <a class="btn btn-outline" id="invitation-link" href="#" target="_blank" rel="noopener">詳しくはこちら</a>
+      </aside>
+    </section>
+
+    <div class="loading no-print" id="loading" hidden>
+      <div class="loading-inner">
+        <span class="loading-mark" aria-hidden="true"></span>
+        <p>物語を綴っています…</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer no-print">
+    <p>入力内容はこのブラウザ内にのみ保存されます。共用のパソコンでお使いの場合は、終わったら削除してください。</p>
+    <button type="button" class="btn btn-ghost btn-small" id="btn-delete-bottom">入力データを削除</button>
+    <p class="copyright">© デンショウ舎</p>
+  </footer>
+
+  <dialog class="dialog" id="pdf-dialog">
+    <h3>PDFとして保存する方法</h3>
+    <ol>
+      <li>このあと印刷の画面が開きます。</li>
+      <li>「送信先」または「プリンター」で<strong>「PDFに保存」</strong>を選びます。</li>
+      <li>「保存」を押すと、PDFファイルができあがります。</li>
+    </ol>
+    <p class="small">iPhone・iPadの場合：印刷画面で、プレビューを指2本で広げる（または共有ボタン）と、PDFとして保存・共有できます。</p>
+    <div class="button-row">
+      <button type="button" class="btn btn-primary" id="btn-pdf-go">印刷画面を開く</button>
+      <button type="button" class="btn btn-ghost" id="btn-pdf-cancel">やめる</button>
+    </div>
+  </dialog>
+
+  <script src="js/config.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

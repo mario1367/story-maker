@@ -1,0 +1,11 @@
+name = "story-maker-api"
+main = "src/worker.js"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# 物語メーカーを設置したホームページのURL（カンマ区切りで複数可・末尾の / は付けない）
+ALLOWED_ORIGINS = "https://denshosha-studio.hateboothheyhey.chatgpt.site"
+
+# APIキーはここに書かず、次のコマンドで登録します：
+#   npx wrangler secret put ANTHROPIC_API_KEY
