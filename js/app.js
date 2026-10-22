@@ -297,7 +297,10 @@
     cover.appendChild(el("p", "book-label", "人生の物語"));
     cover.appendChild(el("h1", "book-title", story.title));
     if (story.subtitle) cover.appendChild(el("p", "book-subtitle", "―― " + story.subtitle + " ――"));
-    cover.appendChild(el("span", "book-seal", "伝"));
+    var seal = el("img", "book-seal");
+    seal.src = "assets/logo-mark.svg";
+    seal.alt = "";
+    cover.appendChild(seal);
     book.appendChild(cover);
 
     var num = 0;
