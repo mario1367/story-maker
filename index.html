@@ -49,6 +49,9 @@
         <div class="button-row center" id="start-row">
           <button type="button" class="btn btn-primary btn-large" id="btn-start">物語をつくる</button>
         </div>
+        <div class="button-row center">
+          <button type="button" class="btn btn-ghost" id="btn-sample">完成サンプルを見る</button>
+        </div>
       </div>
 
       <ol class="steps">
@@ -61,6 +64,27 @@
         入力した内容は、お使いのブラウザの中にだけ一時保存されます。<br>
         外部のサーバーへ送信されることはありません。
       </p>
+    </section>
+
+    <!-- ===== 完成サンプル ===== -->
+    <section class="screen" id="screen-sample" data-screen="sample" hidden>
+      <h2 class="screen-title">完成サンプル</h2>
+      <p class="screen-lead">
+        架空の人物の回答から、実際にこのアプリでつくった見本です。
+        あなたの物語も、こんなふうに一冊の本のような形にまとまります。
+      </p>
+      <details class="answer-review sample-answers">
+        <summary>この見本のもとになった回答を見る</summary>
+        <p class="small">回答していない質問は、物語に含まれません。回答にない出来事が書き足されることもありません。</p>
+        <ol class="review-list" id="sample-answer-list"></ol>
+      </details>
+      <article class="book" id="sample-book" aria-label="完成サンプルの物語"></article>
+      <div class="button-row center sample-actions">
+        <button type="button" class="btn btn-primary btn-large" id="btn-sample-start">自分の物語をつくる</button>
+      </div>
+      <div class="button-row center">
+        <button type="button" class="btn btn-ghost" data-go="intro">← トップに戻る</button>
+      </div>
     </section>
 
     <!-- ===== 2. 誰の物語にするか ===== -->
@@ -117,6 +141,7 @@
         <nav class="q-dots" id="q-dots" aria-label="質問の一覧"></nav>
       </div>
 
+      <p class="encourage" id="q-encourage" aria-live="polite" hidden></p>
       <h2 class="question-text" id="q-text"></h2>
       <p class="question-hint" id="q-hint"></p>
       <label class="visually-hidden" for="q-answer">回答</label>
@@ -134,6 +159,24 @@
     <section class="screen" id="screen-tone" data-screen="tone" hidden>
       <h2 class="screen-title">物語の雰囲気を選んでください</h2>
       <div class="choice-list" id="tone-list" role="radiogroup" aria-label="物語の雰囲気"></div>
+
+      <div class="cover-picker">
+        <h3 class="sub-title">表紙のタイトルを決めましょう</h3>
+        <p class="small">下の候補から選んだり、自由に書いたりできます。空欄のままでもかまいません。あとから変えることもできます。</p>
+        <div class="cover-picker-inner">
+          <div class="mini-cover" aria-hidden="true">
+            <span class="mini-label">人生の物語</span>
+            <span class="mini-title" id="mini-title"></span>
+            <span class="mini-subtitle" id="mini-subtitle"></span>
+            <img class="mini-seal" src="assets/logo-mark.svg" alt="">
+          </div>
+          <div class="cover-fields">
+            <label class="field-label" for="input-cover-title">タイトル</label>
+            <input type="text" class="text-input" id="input-cover-title" maxlength="40" autocomplete="off">
+            <div class="chips" id="title-chips"></div>
+          </div>
+        </div>
+      </div>
 
       <div class="ai-option" id="ai-option" hidden>
         <label class="checkbox">
@@ -243,6 +286,7 @@
 
   <script src="js/config.js"></script>
   <script src="js/questions.js"></script>
+  <script src="js/sample.js"></script>
   <script src="js/generator.js"></script>
   <script src="js/app.js"></script>
 </body>

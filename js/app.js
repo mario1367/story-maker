@@ -20,6 +20,7 @@
       skipped: QUESTIONS.map(function () { return false; }),
       qIndex: 0,
       tone: "warm",
+      customTitle: "",
       useAI: false,
       story: null,
       edited: false
@@ -87,12 +88,14 @@
 
   /* ---------- 画面の切り替え ---------- */
   function show(screen) {
-    state.screen = screen;
+    // トップと見本は「続きから」の再開場所として記録しない
+    if (screen !== "intro" && screen !== "sample") state.screen = screen;
     var screens = document.querySelectorAll(".screen");
     for (var i = 0; i < screens.length; i++) {
       screens[i].hidden = screens[i].getAttribute("data-screen") !== screen;
     }
     if (screen === "intro") renderIntro();
+    if (screen === "sample") renderSample();
     if (screen === "target") renderTarget();
     if (screen === "name") renderName();
     if (screen === "question") renderQuestion();
@@ -113,6 +116,24 @@
     var saved = hasProgress(state);
     $("resume-card").hidden = !saved;
     $("start-row").hidden = saved;
+  }
+
+  /* ---------- 完成サンプル ---------- */
+  function renderSample() {
+    var sample = window.SAMPLE;
+    var story = Gen.generateFromTemplate(sample);
+    if (sample.title) story.title = sample.title;
+    renderBook(story, $("sample-book"));
+
+    var list = $("sample-answer-list");
+    list.innerHTML = "";
+    QUESTIONS.forEach(function (q, i) {
+      var li = el("li", "review-item");
+      li.appendChild(el("p", "review-q", q.other.replace(/\{name\}/g, sample.name)));
+      var a = (sample.answers[i] || "").trim();
+      li.appendChild(el("p", a ? "review-a" : "review-a is-empty", a || "（回答なし）"));
+      list.appendChild(li);
+    });
   }
 
   /* ---------- 2. 誰の物語か ---------- */
@@ -148,9 +169,38 @@
     $("q-hint").textContent = QUESTIONS[i].hint;
     $("q-answer").value = state.answers[i];
     $("save-status").textContent = "";
+    $("q-encourage").hidden = true;
     $("btn-q-prev").textContent = i === 0 ? "← 戻る" : "← 前へ";
     $("btn-q-next").textContent = i === total - 1 ? "雰囲気を選ぶ →" : "次へ →";
     renderDots();
+  }
+
+  // 質問に答えるたびに、物語が育っていく様子をひとこと伝える
+  function showEncouragement(answeredNow) {
+    var box = $("q-encourage");
+    var n = state.answers.filter(function (a) { return a.trim(); }).length;
+    var owner = state.target === "self" ? "あなたの物語" : (state.name.trim() ? state.name.trim() + "の物語" : "物語");
+    var msg;
+    if (!answeredNow) {
+      msg = "とばしても大丈夫です。あとから戻って書くこともできます。";
+    } else if (n === 1) {
+      msg = "最初の一章が綴られました。" + owner + "が、少しずつ形になっています。";
+    } else {
+      var tails = [
+        owner + "が、少しずつ形になっています。",
+        "一つひとつの思い出が、ページになっていきます。",
+        owner + "に、新しいページが加わりました。"
+      ];
+      msg = Gen.chapterNumber(n) + "まで綴られました。" + tails[n % tails.length];
+    }
+    if (state.qIndex === QUESTIONS.length - 1) msg += "　いよいよ最後の質問です。";
+    else if (state.qIndex === Math.floor(QUESTIONS.length / 2)) msg += "　ちょうど折り返しです。";
+    box.textContent = msg;
+    box.hidden = false;
+    // 同じ要素でもアニメーションをやり直す
+    box.classList.remove("is-new");
+    void box.offsetWidth;
+    box.classList.add("is-new");
   }
 
   function renderDots() {
@@ -178,9 +228,11 @@
   function nextQuestion(skip) {
     commitAnswer();
     if (skip) state.skipped[state.qIndex] = true;
+    var answeredNow = !skip && !!state.answers[state.qIndex].trim();
     if (state.qIndex < QUESTIONS.length - 1) {
       state.qIndex++;
       renderQuestion();
+      showEncouragement(answeredNow);
       window.scrollTo(0, 0);
       $("q-text").focus({ preventScroll: true });
       saveSoon(false);
@@ -203,6 +255,8 @@
       b.addEventListener("click", function () { state.tone = t.id; renderTone(); saveSoon(false); });
       list.appendChild(b);
     });
+
+    renderCoverPicker();
 
     $("ai-option").hidden = !Gen.isAIAvailable();
     $("input-ai").checked = !!state.useAI;
@@ -235,6 +289,46 @@
     $("tone-error").hidden = true;
   }
 
+  function coverData() {
+    return { target: state.target, name: state.name, tone: state.tone };
+  }
+
+  function updateMiniCover() {
+    var d = coverData();
+    $("mini-title").textContent = state.customTitle.trim() || Gen.defaultTitle(d);
+    $("mini-subtitle").textContent = Gen.defaultSubtitle(d);
+  }
+
+  function renderCoverPicker() {
+    var d = coverData();
+    var input = $("input-cover-title");
+    input.value = state.customTitle;
+    input.placeholder = Gen.defaultTitle(d);
+    var n = state.name.trim();
+    var ideas;
+    if (state.target === "self") {
+      ideas = n ? [n + "の物語", n + "の歩んだ道", "私がたどってきた道", "次の世代へ贈る物語"]
+                : ["私の物語", "私の歩んだ道", "私がたどってきた道", "次の世代へ贈る物語"];
+    } else {
+      var who = n || "あの人";
+      ideas = [who + "の物語", who + "の歩んだ道", who + "へ贈る物語", who + "から受け継ぐもの"];
+    }
+    var chips = $("title-chips");
+    chips.innerHTML = "";
+    ideas.forEach(function (t) {
+      var c = el("button", "chip", t);
+      c.type = "button";
+      c.addEventListener("click", function () {
+        state.customTitle = t;
+        input.value = t;
+        updateMiniCover();
+        saveSoon(false);
+      });
+      chips.appendChild(c);
+    });
+    updateMiniCover();
+  }
+
   function generate() {
     var answered = state.answers.filter(function (a) { return a.trim(); }).length;
     var err = $("tone-error");
@@ -252,6 +346,7 @@
 
     if (!state.useAI) {
       state.story = Gen.generateFromTemplate(data);
+      applyCustomTitle();
       state.edited = false;
       show("result");
       return;
@@ -264,6 +359,7 @@
       state.story = Gen.generateFromTemplate(data);
       state.aiFailed = true;
     }).then(function () {
+      applyCustomTitle();
       $("loading").hidden = true;
       state.edited = false;
       show("result");
@@ -272,6 +368,11 @@
         window.alert("AIでの作成ができなかったため、標準の方法で物語をつくりました。");
       }
     });
+  }
+
+  function applyCustomTitle() {
+    var t = state.customTitle.trim();
+    if (t && state.story) state.story.title = t;
   }
 
   /* ---------- 6. できあがり ---------- */
@@ -287,9 +388,9 @@
     renderBook();
   }
 
-  function renderBook() {
-    var story = state.story;
-    var book = $("book");
+  function renderBook(story, book) {
+    story = story || state.story;
+    book = book || $("book");
     book.innerHTML = "";
     book.className = "book tone-" + story.tone;
 
@@ -422,9 +523,18 @@
   function bind() {
     $("brand-link").href = CONFIG.HOME_URL || "#";
     $("btn-start").addEventListener("click", function () { show("target"); });
+    $("btn-sample").addEventListener("click", function () { show("sample"); });
+    $("btn-sample-start").addEventListener("click", function () {
+      if (hasProgress(state)) show("intro"); else show("target");
+    });
+    $("input-cover-title").addEventListener("input", function () {
+      state.customTitle = this.value;
+      updateMiniCover();
+      saveSoon(false);
+    });
     $("btn-resume").addEventListener("click", function () {
       var s = state.screen;
-      show(s && s !== "intro" ? s : (state.target ? "question" : "target"));
+      show(s && s !== "intro" && s !== "sample" ? s : (state.target ? "question" : "target"));
     });
     $("btn-restart").addEventListener("click", function () {
       if (!window.confirm("保存されている内容を消して、最初から始めます。よろしいですか？")) return;
@@ -544,10 +654,7 @@
       if (document.visibilityState === "hidden" && saveTimer) saveNow();
     });
     // 起動時はいつも最初の画面から（続きがあれば「続きから」ボタンを表示）
-    var resumeScreen = state.screen;
     show("intro");
-    state.screen = resumeScreen;
-    saveSoon(false);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

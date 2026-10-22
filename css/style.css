@@ -120,7 +120,7 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .screen, .loading-mark { animation: none !important; }
+  .screen, .loading-mark, .encourage { animation: none !important; }
 }
 
 .screen-title, .question-text, .hero-title, .invitation-title {
@@ -306,6 +306,70 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 .question-text { font-size: 28px; line-height: 1.65; margin: 0 0 12px; }
 .question-hint { color: var(--ink-soft); font-size: 16px; margin: 0 0 20px; }
 .save-status { min-height: 1.6em; font-size: 14px; color: var(--ink-faint); margin: 6px 0 0; }
+
+/* ---------- 励ましのひとこと ---------- */
+.encourage {
+  display: flex; align-items: flex-start; gap: 10px;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--shu);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-family: var(--font-mincho);
+  font-size: 16px; line-height: 1.8;
+  color: var(--ink);
+}
+.encourage::before {
+  content: "";
+  flex: none;
+  width: 22px; height: 22px; margin-top: 3px;
+  background: url("../assets/logo-mark.svg") center / contain no-repeat;
+}
+.encourage.is-new { animation: rise 0.5s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- 表紙のタイトル ---------- */
+.sub-title {
+  font-family: var(--font-mincho); font-weight: 600;
+  font-size: 21px; letter-spacing: 0.08em;
+  margin: 0 0 4px;
+}
+.cover-picker {
+  margin-top: 40px; padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.cover-picker-inner {
+  display: grid; grid-template-columns: 170px 1fr; gap: 24px;
+  align-items: start; margin-top: 16px;
+}
+.cover-fields .field-label { margin-top: 0; }
+.mini-cover {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  aspect-ratio: 3 / 4;
+  padding: 18px 14px;
+  background: var(--page);
+  border-radius: 2px 6px 6px 2px;
+  box-shadow: inset 6px 0 0 rgba(176, 67, 44, 0.85), 0 1px 2px rgba(60, 40, 20, 0.1), 0 8px 20px rgba(60, 40, 20, 0.12);
+  text-align: center;
+  font-family: var(--font-mincho);
+}
+.mini-cover::before {
+  content: ""; position: absolute; inset: 8px 8px 8px 14px;
+  border: 1px solid var(--line); pointer-events: none;
+}
+.mini-label { font-size: 10px; letter-spacing: 0.3em; color: var(--shu-deep); }
+.mini-title {
+  font-size: 17px; font-weight: 700; line-height: 1.5; letter-spacing: 0.08em;
+  margin: 10px 0 6px; overflow-wrap: anywhere;
+}
+.mini-subtitle { font-size: 10px; color: var(--ink-soft); letter-spacing: 0.06em; }
+.mini-seal { width: 22px; height: 22px; margin-top: 12px; }
+
+/* ---------- 完成サンプル ---------- */
+.sample-answers { margin: 0 0 28px; }
+.sample-actions { margin-top: 40px; }
 
 /* ---------- 回答の見直し ---------- */
 .answer-review { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 16px; }
@@ -523,6 +587,9 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
   .book-title { font-size: 26px; letter-spacing: 0.1em; }
   .chapter-heading { font-size: 21px; letter-spacing: 0.12em; }
   .btn-large { width: 100%; padding: 14px 24px; }
+  .cover-picker-inner { grid-template-columns: 120px 1fr; gap: 16px; }
+  .mini-title { font-size: 14px; }
+  .encourage { font-size: 15px; }
 }
 
 /* ---------- 印刷・PDF ---------- */

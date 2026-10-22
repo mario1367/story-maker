@@ -294,6 +294,8 @@
     generateWithAI: generateWithAI,
     storyToText: storyToText,
     chapterNumber: chapterNumber,
+    defaultTitle: defaultTitle,
+    defaultSubtitle: defaultSubtitle,
     isAIAvailable: function () { return !!(window.APP_CONFIG || {}).AI_ENDPOINT; }
   };
 })();
