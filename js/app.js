@@ -19,7 +19,7 @@
       answers: QUESTIONS.map(function () { return ""; }),
       skipped: QUESTIONS.map(function () { return false; }),
       qIndex: 0,
-      tone: "warm",
+      tone: "interview",
       customTitle: "",
       useAI: false,
       story: null,
@@ -413,7 +413,12 @@
       var sec = el("section", "chapter" + (c.heading ? "" : " chapter-plain") + (c.role ? " chapter-" + c.role : ""));
       sec.setAttribute("data-index", ci);
       var paras = c.paragraphs.slice();
-      var para = function (p) { return el("p", /^[「『]/.test(p) ? "quote" : "", p); };
+      var para = function (p) {
+        var cls = /^[「『]/.test(p) ? "quote" : "";
+        if (c.role === "qa" && /^――/.test(p)) cls = "qa-q"; // インタビューの聞き手の質問
+        if (c.role === "qa" && /^聞き手：/.test(p)) cls = "qa-credit";
+        return el("p", cls, p);
+      };
       if (c.heading) {
         num++;
         // 見出しと書き出しの一段落をひとまとまりにし、印刷で見出しだけが取り残されないようにする

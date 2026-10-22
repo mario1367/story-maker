@@ -48,6 +48,7 @@ window.QUESTIONS = [
 
 /* 物語の雰囲気 */
 window.TONES = [
+  { id: "interview", label: "インタビュー形式", desc: "本づくりの取材のように、聞き手の質問とあなたの言葉で綴る記事に。" },
   { id: "warm",   label: "温かく感動的",     desc: "やさしい語り口で、心にしみる物語に。" },
   { id: "memoir", label: "落ち着いた自伝風", desc: "事実を淡々と、品よく綴る文体に。" },
   { id: "novel",  label: "小説のような物語風", desc: "情景が浮かぶ、文学作品のような語りに。" },

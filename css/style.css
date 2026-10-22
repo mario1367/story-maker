@@ -531,6 +531,27 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
 }
 .chapter-main { margin-bottom: 40px; }
 
+/* インタビュー形式 */
+.chapter-qa .chapter-body p { text-indent: 1em; }
+.chapter-qa .chapter-body p.qa-q {
+  text-indent: 0;
+  margin: 2em 0 0.8em;
+  font-weight: 700;
+  color: var(--shu-deep);
+  letter-spacing: 0.06em;
+}
+.chapter-qa .chapter-body p.qa-q:first-child { margin-top: 0; }
+.chapter-qa .chapter-body p.qa-credit {
+  margin-top: 2.4em;
+  text-indent: 0; text-align: right;
+  font-size: 0.85em; color: var(--ink-soft); letter-spacing: 0.12em;
+}
+.tone-interview .chapter-prologue .chapter-body p {
+  text-indent: 0;
+  padding: 0.2em 0 1.4em;
+  border-bottom: 1px solid var(--line);
+}
+
 /* 序文は少し控えめに */
 .chapter-prologue .chapter-body p { color: var(--ink-soft); }
 
@@ -667,7 +688,13 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
   .book-title { font-size: 26pt; }
   /* 章が長くなったので章の途中での改ページは許し、見出しと書き出しは離さない */
   .chapter { break-inside: auto; }
-  .chapter-plain, .chapter-epigraph { break-inside: avoid; page-break-inside: avoid; }
+  .chapter-prologue, .chapter-epilogue, .chapter-epigraph { break-inside: avoid; page-break-inside: avoid; }
+  .chapter-qa .qa-q { break-after: avoid; page-break-after: avoid; }
+  .chapter-qa .chapter-body p.qa-q { margin: 1.3em 0 0.4em; }
+  .chapter-qa .chapter-body p.qa-credit { margin-top: 1.2em; }
+  .chapter-qa .chapter-body p { margin-bottom: 0.3em; }
+  /* 最後の一行だけが次のページに送られないよう、印刷では作成元の表記を省く */
+  .book-colophon { display: none; }
   .chapter-lead { break-inside: avoid; page-break-inside: avoid; }
   .chapter-num, .chapter-heading { break-after: avoid; page-break-after: avoid; }
   .chapter-epigraph {

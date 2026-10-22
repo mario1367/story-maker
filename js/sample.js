@@ -6,7 +6,7 @@
 window.SAMPLE = {
   target: "family",
   name: "祖母",
-  tone: "warm",
+  tone: "interview",
   title: "祖母・ハナの物語",
   answers: [
     "若い頃、親の反対を押し切って始めた洋裁の店を、二年でたたんでしまったこと。",

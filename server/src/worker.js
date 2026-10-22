@@ -13,6 +13,7 @@ import Anthropic from "@anthropic-ai/sdk";
 const MODEL = "claude-opus-5-5";
 const MAX_ANSWER_LENGTH = 2000; // 1問あたりの最大文字数
 const TONE_LABELS = {
+  interview: "インタビュー記事（聞き手の質問を「――」で始まる段落にし、本人の答えと交互に並べる。答えは話し言葉の味わいを残す）",
   warm: "温かく感動的な語り口（です・ます調）",
   memoir: "落ち着いた自伝風（である調）",
   novel: "小説のような物語風（だ・である調、情景を感じさせる文体）",
@@ -123,7 +124,7 @@ export default {
       .filter((a) => a.answer);
     if (cleaned.length === 0) return json({ error: "no_answers" }, 400, cors);
 
-    const tone = TONE_LABELS[input.tone] ? input.tone : "warm";
+    const tone = TONE_LABELS[input.tone] ? input.tone : "interview";
     const who =
       input.target === "self"
         ? "語り手本人の人生（一人称「私」で書く）"

@@ -32,6 +32,25 @@
   var LESSON = "lesson";
 
   var TEMPLATES = {
+    // インタビュー形式：本づくりの取材記事のように、聞き手の質問と本人の答えを交互に並べます
+    interview: {
+      prologue: {
+        self: ["人生でいちばん大きな失敗と、そこから学んだこと。その道のりを、ご本人の言葉で語っていただきました。"],
+        other: ["{S}の人生でいちばん大きな失敗と、そこから学んだこと。その道のりを、インタビューの形でまとめました。"]
+      },
+      // 聞き手の質問。家族の物語でも、ご本人に直接たずねる形にします
+      //（実際にご家族へインタビューしながら入力する使い方にも合うように）
+      questions: {
+        failure: "これまでの人生で、一番大きな失敗は何でしたか。",
+        feeling: "そのとき、どんなお気持ちでしたか。",
+        overcome: "そこから、どうやって乗り越えたのでしょう。",
+        support: "乗り越えるとき、支えになった人や言葉はありましたか。",
+        now: "今、その失敗を振り返って、どう思われますか。",
+        lesson: "最後に、その経験から次の世代に伝えたいことを聞かせてください。"
+      },
+      epilogue: ["聞き手：人生の物語メーカー"]
+    },
+
     warm: {
       prologue: {
         self: ["これは、私の人生でいちばん大きな失敗と、そこから学んだことを、私自身の言葉で綴った物語。"],
@@ -123,7 +142,7 @@
   }
 
   function defaultSubtitle(data) {
-    var map = { warm: "心に残る、人生の記憶", memoir: "歩みの記録", novel: "ひとつの人生をめぐる物語", letter: "大切な人への手紙" };
+    var map = { interview: "人生を語る、インタビュー", warm: "心に残る、人生の記憶", memoir: "歩みの記録", novel: "ひとつの人生をめぐる物語", letter: "大切な人への手紙" };
     return map[data.tone] || "";
   }
 
@@ -189,6 +208,8 @@
     }).length;
     if (answeredCount === 0) return null;
 
+    if (data.tone === "interview") return interviewStory(data, tpl, ctx, answeredCount);
+
     var paragraphs = [];
     FLOW_PARAGRAPHS.forEach(function (ids) {
       var text = "";
@@ -220,6 +241,36 @@
       if (data.tone === "letter" && ctx.isSelf && ctx.name) closing.push(ctx.name + "より");
       chapters.push({ heading: "", paragraphs: closing, role: "epilogue" });
     }
+
+    return {
+      title: defaultTitle(data),
+      subtitle: defaultSubtitle(data),
+      tone: data.tone,
+      source: "template",
+      chapters: chapters
+    };
+  }
+
+  /* インタビュー形式：
+     ・見出し代わりに、最後の答え（伝えたいこと）を冒頭に大きく引用
+     ・リード文
+     ・「――」で始まる聞き手の質問と、書いた人の答え（言葉はそのまま）を交互に */
+  function interviewStory(data, tpl, ctx, answeredCount) {
+    var chapters = [];
+    var lesson = answerOf(data, LESSON);
+    if (lesson) {
+      chapters.push({ heading: "", paragraphs: toQuote(lesson).concat(["―― " + (ctx.isSelf ? (ctx.name || "語り手") : ctx.S)]), role: "epigraph" });
+    }
+    chapters.push({ heading: "", paragraphs: pick(tpl.prologue, ctx.isSelf).map(function (t) { return fill(t, ctx); }), role: "prologue" });
+
+    var qa = [];
+    window.QUESTIONS.forEach(function (q) {
+      var answer = answerOf(data, q.id);
+      if (!answer) return; // 答えていない質問は、記事に含めない
+      qa.push("――" + fill(pick(tpl.questions[q.id], ctx.isSelf), ctx));
+      qa = qa.concat(toParagraphs(answer));
+    });
+    chapters.push({ heading: "", paragraphs: qa.concat(tpl.epilogue), role: "qa" });
 
     return {
       title: defaultTitle(data),
@@ -304,6 +355,8 @@
       }
       c.paragraphs.forEach(function (p) {
         if (c.role === "epigraph") lines.push("　　　　" + p);
+        else if (c.role === "qa" && /^――/.test(p)) { lines.push(""); lines.push(p); }
+        else if (c.role === "qa" && /^聞き手：/.test(p)) { lines.push(""); lines.push("　　　　　　　　" + p); }
         else lines.push(/^[「『]/.test(p) ? p : "　" + p);
       });
     });
