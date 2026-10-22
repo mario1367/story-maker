@@ -546,7 +546,8 @@ main { max-width: var(--max); margin: 0 auto; padding: 0 20px; }
     page-break-after: always; break-after: page;
   }
   .book-title { font-size: 26pt; }
-  .chapter { break-inside: auto; }
+  /* 章の見出しだけがページの最後に取り残されないよう、短い章は分割しない */
+  .chapter { break-inside: avoid; page-break-inside: avoid; }
   .chapter-num, .chapter-heading { break-after: avoid; page-break-after: avoid; }
   .chapter-body p { orphans: 3; widows: 3; }
   .book.is-editing [contenteditable] { outline: none; }
